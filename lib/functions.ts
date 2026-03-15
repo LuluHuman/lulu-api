@@ -26,25 +26,25 @@ export function stringifyBodylastfm(params: { [key: string]: string | { [key: st
     });
     return paramsUri.toString()
 }
-export function sign(data: { [key: string]: string | { [key: string]: string }[] | undefined }) {
-    const raw = Object.entries(data)
-        .filter(([key]) => !["format", "api_sig"].includes(key))
-        .map((entry) => {
-            if (typeof entry[1] == "string") return entry[0] + entry[1]
-            if (entry[1] && entry[1][0]) return entry[1]
-                .map((e: { [key: string]: any }, i: number) =>
-                    Object
-                        .entries(e)
-                        .map(([ek, ev]) => ev ? `${ek}[${i}]${ev}` : undefined)
-                        .filter((v: any) => v)
-                ).flat()
-        })
-        .filter((v: any) => v)
-        .flat()
-        .sort()
-        .join("") + process.env.LASTFM_API_SECRET
-    return md5(raw)
+export function sign(params: { [key: string]: string | { [key: string]: string }[] }) {
+    var string = '';
+    const paramsUri = new URLSearchParams()
+    Object.entries(params).forEach(([entry_key, entry_value]) => {
+        if (typeof entry_value == "string") return (paramsUri.set(entry_key, entry_value));
+        entry_value.forEach((entry: { [key: string]: any }, i: number) => Object.entries(entry).forEach(([ek, ev]) => paramsUri.set(`${ek}[${i}]`, ev)))
+    });
+    const entries = paramsUri.entries().toArray()
+    const keys = entries.map(ent => ent[0]).filter(key => !["api_sig", "format"].includes(key))
+    keys.sort();
+    keys.forEach(function (key) {
+        const entry = entries.find(ent => ent[0] == key)
+        if (!entry) return
+        string += key + entry[1]
+    });
+    string += process.env.LASTFM_API_SECRET;
+    return md5(string)
 }
+
 export function getTrack(track: {
     isrc?: string,
     name: string,
@@ -67,7 +67,6 @@ export function getTrack(track: {
     const track_to = (Object.values(db).find(trackDb => trackDb.name_from == track.name && trackDb.artist_from == track.artist));
     return track_to
 }
-
 export function getArtist(artist: string) {
     const entry = (dbArtist as { from: string, to: string }[]).find(e => e.from == artist)
     return entry
