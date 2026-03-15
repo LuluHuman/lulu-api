@@ -44,6 +44,9 @@ export async function POST(req: NextRequest) {
     const body = await req.text()
     const params = parseBodyLastfm(body);
 
+    console.log(params);
+
+
     // const signature_computed = sign({ ...params, api_sig: undefined })
     // const signature_received = params.api_sig as string
     // if (!signature_received || signature_computed != signature_received) {
@@ -94,6 +97,9 @@ export async function POST(req: NextRequest) {
         const value = request.headers[key];
         resHeaders[key] = value
     }
+
+    console.log(request.data.toString());
+
     return new Response(request.data, { status: request.status, headers: resHeaders })
 }
 
