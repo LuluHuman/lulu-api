@@ -41,8 +41,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const params = parseBodyLastfm(await req.text());
-    console.log(await req.text());
+    const body = await req.text()
+    const params = parseBodyLastfm(body);
+    console.log(body);
 
     const signature_computed = sign({ ...params, api_sig: undefined })
     const signature_received = params.api_sig as string
