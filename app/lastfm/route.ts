@@ -14,7 +14,6 @@ const blacklistedHeaders = [
 ];
 
 export async function GET(req: NextRequest) {
-
     const reqHeaders: { [key: string]: string } = {}
     req.headers.entries().forEach(([headerKey, headerValue]) => {
         if (Object.keys(reqHeaders).includes(headerKey)) return
@@ -43,6 +42,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     const params = parseBodyLastfm(await req.text());
+    console.log(params);
+
     const signature_computed = sign({ ...params, api_sig: undefined })
     const signature_received = params.api_sig as string
     if (!signature_received || signature_computed != signature_received)
