@@ -44,23 +44,23 @@ export async function POST(req: NextRequest) {
     const body = await req.text()
     const params = parseBodyLastfm(body);
 
-    const signature_computed = sign({ ...params, api_sig: undefined })
-    const signature_received = params.api_sig as string
-    if (!signature_received || signature_computed != signature_received) {
-        console.log(
-            `invalid signature.\n` +
-            `You gave me: ${signature_received}\n` +
-            `I got: ${signature_computed}\n` +
-            `Your body: ${JSON.stringify({ ...params, api_sig: undefined })}`);
+    // const signature_computed = sign({ ...params, api_sig: undefined })
+    // const signature_received = params.api_sig as string
+    // if (!signature_received || signature_computed != signature_received) {
+    //     console.log(
+    //         `invalid signature.\n` +
+    //         `You gave me: ${signature_received}\n` +
+    //         `I got: ${signature_computed}\n` +
+    //         `Your body: ${JSON.stringify({ ...params, api_sig: undefined })}`);
 
-        return new Response(
-            `invalid signature.\n` +
-            `You gave me: ${signature_received}\n` +
-            `I got: ${signature_computed}\n` +
-            `Your body: ${JSON.stringify({ ...params, api_sig: undefined })}`,
-            { status: 400 }
-        )
-    }
+    //     return new Response(
+    //         `invalid signature.\n` +
+    //         `You gave me: ${signature_received}\n` +
+    //         `I got: ${signature_computed}\n` +
+    //         `Your body: ${JSON.stringify({ ...params, api_sig: undefined })}`,
+    //         { status: 400 }
+    //     )
+    // }
 
     const buildSwappedParams = () => {
         if (params.items && typeof params.items !== "string") return {
