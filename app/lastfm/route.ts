@@ -42,11 +42,17 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     const params = parseBodyLastfm(await req.text());
-    console.log(params);
+    console.log(await req.text());
 
     const signature_computed = sign({ ...params, api_sig: undefined })
     const signature_received = params.api_sig as string
-    if (!signature_received || signature_computed != signature_received)
+    if (!signature_received || signature_computed != signature_received) {
+        console.log(
+            `invalid signature.\n` +
+            `You gave me: ${signature_received}\n` +
+            `I got: ${signature_computed}\n` +
+            `Your body: ${JSON.stringify({ ...params, api_sig: undefined })}`);
+
         return new Response(
             `invalid signature.\n` +
             `You gave me: ${signature_received}\n` +
@@ -55,6 +61,7 @@ export async function POST(req: NextRequest) {
             { status: 400 }
         )
 
+    }
     delete params.api_sig
 
     const buildSwappedParams = () => {
