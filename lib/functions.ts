@@ -4,38 +4,27 @@ import dbArtist from "./artist_db.json"
 
 export function parseBodyLastfm(body: string) {
     const parsedJson: { [key: string]: any } = {}
-    const parsedArray = (body as string).split("&").map((e: string) => e.split("=").map(decodeURIComponent))
-    parsedArray.forEach(([key, val]) => {
-        const arrayRegex = /^(.+)(?:\[(\d+)\])$/gm
-        const arrayKeys = arrayRegex.exec(key)
-        if (arrayKeys === null) return parsedJson[key] = val
-        const [, arrayKey, index_str] = arrayKeys
-        const index = parseInt(index_str)
-        if (!parsedJson["items"]) parsedJson["items"] = []
-        if (!parsedJson["items"][index]) parsedJson["items"][index] = {}
-        parsedJson["items"][index][arrayKey] = val
-    })
+    new URLSearchParams(body)
+        .entries()
+        .forEach(([key, val]) => {
+            const arrayRegex = /^(.+)(?:\[(\d+)\])$/gm
+            const arrayKeys = arrayRegex.exec(key)
+            if (arrayKeys === null) return parsedJson[key] = val
+            const [, arrayKey, index_str] = arrayKeys
+            const index = parseInt(index_str)
+            if (!parsedJson["items"]) parsedJson["items"] = []
+            if (!parsedJson["items"][index]) parsedJson["items"][index] = {}
+            parsedJson["items"][index][arrayKey] = val
+        })
     return parsedJson as { [key: string]: string | { [key: string]: string }[] }
 }
 export function stringifyBodylastfm(params: { [key: string]: string | { [key: string]: string }[] }) {
-    return Object
-        .entries(params)
-        .map((entry) => {
-            if (typeof entry[1] == "string") return encodeURIComponent(entry[0]) + "=" + encodeURIComponent(entry[1])
-            if (entry[1] && entry[1][0]) return entry[1]
-                .map((e: { [key: string]: any }, i: number) =>
-                    Object
-                        .entries(e)
-                        .map(([ek, ev]) =>
-                            ev ? encodeURIComponent(`${ek}[${i}]`) + `=` + encodeURIComponent(ev) : undefined
-                        )
-                        .filter((v: any) => v)
-                ).flat()
-        })
-        .filter((v: any) => v)
-        .flat()
-        .sort()
-        .join("&")
+    const paramsUri = new URLSearchParams()
+    Object.entries(params).forEach(([entry_key, entry_value]) => {
+        if (typeof entry_value == "string") return (paramsUri.set(entry_key, entry_value));
+        entry_value.forEach((entry: { [key: string]: any }, i: number) => Object.entries(entry).forEach(([ek, ev]) => paramsUri.set(`${ek}[${i}]`, ev)))
+    });
+    return paramsUri.toString()
 }
 export function sign(data: { [key: string]: string | { [key: string]: string }[] | undefined }) {
     const raw = Object.entries(data)

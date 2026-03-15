@@ -43,7 +43,6 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     const body = await req.text()
     const params = parseBodyLastfm(body);
-    console.log(body);
 
     const signature_computed = sign({ ...params, api_sig: undefined })
     const signature_received = params.api_sig as string
@@ -61,9 +60,7 @@ export async function POST(req: NextRequest) {
             `Your body: ${JSON.stringify({ ...params, api_sig: undefined })}`,
             { status: 400 }
         )
-
     }
-    delete params.api_sig
 
     const buildSwappedParams = () => {
         if (params.items && typeof params.items !== "string") return {
@@ -75,6 +72,11 @@ export async function POST(req: NextRequest) {
     }
 
     const rawSwappedParams = buildSwappedParams()
+    Object.keys(rawSwappedParams).forEach((key) => {
+        const val = rawSwappedParams[key as keyof typeof rawSwappedParams]
+        if (val === undefined) delete rawSwappedParams[key as keyof typeof rawSwappedParams]
+    })
+
     const signedSwappedParams = (signBody(rawSwappedParams))
 
     const request = await axios.request({
